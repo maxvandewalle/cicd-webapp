@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  webapp:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - '3000:3000'
+    environment:
+      - MYSQL_URL=mysql://root:root@database:3306/animalsdb # MySQL connection string
+    depends_on:
+      database:
+        condition: service_healthy # Ensure the database is healthy before starting the webapp
+    command: sh -c "until nc -z database 3306; do echo Waiting for MySQL...; sleep 2; done && yarn start"
+
+  database:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: root # Root password for MySQL
+      MYSQL_DATABASE: animalsdb # The name of the database to create
+      MYSQL_USER: root # MySQL user
+      MYSQL_PASSWORD: root # User's password
+    volumes:
+      - mysql-data:/var/lib/mysql # Named volume for MySQL data persistence
+    restart: always
+    ports:
+      - '3306:3306' # Expose MySQL port (internally and externally)
+    healthcheck:
+      test: 'mysqladmin ping -h localhost -u root --password=root'
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 5s
+
+  test:
+    image: ${DOCKER_REGISTRY-}webapp # Reuse the webapp image for running tests
+    environment:
+      - API_URL=http://webapp:3000 # Use webapp service as hostname
+    depends_on:
+      webapp:
+        condition: service_healthy # Ensure the webapp is healthy before running tests
+    command: yarn test # Run the Mocha tests using yarn test
+    volumes:
+      - ./tests:/app/tests # Mount the tests folder to the container
+      - ./database:/app/database # Mount the database to the container
+
+volumes:
+  mysql-data: # Named volume for MySQL data persistence
