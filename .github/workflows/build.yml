@@ -20,3 +20,10 @@ jobs:
         env:
           ESLINT_USE_FLAT_CONFIG: false
         run: yarn lint
+      - name: Build Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          tags: maxvandewalle/webapp:latest
+          push: false
