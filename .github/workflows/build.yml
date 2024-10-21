@@ -23,8 +23,8 @@ jobs:
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
         with:
-          username: ${{ secrets.DOCKERHUB_MAXVANDEWALLE }}
-          password: ${{ secrets.DOCKERHUB_CICD }}
+          dockerhub_username: ${{ secrets.DOCKERHUB_USERNAME }}
+          dockerhub_password: ${{ secrets.DOCKERHUB_PASSWORD }}
       - name: Build Docker image
         uses: docker/build-push-action@v5
         with:
