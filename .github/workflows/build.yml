@@ -16,5 +16,7 @@ jobs:
           node-version: '20'
       - name: Install dependencies
         run: yarn install
-      - name: Run linter using yarn lint
+      - name: Run linter
+        env:
+          ESLINT_USE_OLD_CONFIG: true
         run: yarn lint
